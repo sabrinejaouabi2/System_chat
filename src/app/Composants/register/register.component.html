@@ -1,12 +1,13 @@
 <div class="register-container">
   <h2 class="title">Créer un compte</h2>
 
-  <form (ngSubmit)="register()" class="register-form">
-     <!-- Champ pour le nom -->
-     <div class="form-group">
+  <form (ngSubmit)="onRegister()" class="register-form">
+    <!-- Champ pour le nom -->
+    <div class="form-group">
       <label for="name">Nom</label>
       <input type="text" id="name" [(ngModel)]="name" name="name" required placeholder="Entrez votre nom">
     </div>
+
     <div class="form-group">
       <label for="email">Email</label>
       <input type="email" id="email" [(ngModel)]="email" name="email" required placeholder="Entrez votre email">

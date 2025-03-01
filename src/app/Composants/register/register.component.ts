@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/Services/auth.service';
 
@@ -7,33 +7,29 @@ import { AuthService } from 'src/app/Services/auth.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent {
+  name: string = '';
   email: string = '';
-  name:string='';
   password: string = '';
-  confirmPassword: string = '';
-  errorMessage: string = '';
+  confirmPassword: string = '';  // Ajout de confirmPassword
+  errorMessage: string | null = null;  // Ajout de errorMessage
+
   constructor(private authService: AuthService, private router: Router) { }
 
-  ngOnInit(): void {
-  }
-
-  register(): void {
+  onRegister(): void {
     if (this.password !== this.confirmPassword) {
       this.errorMessage = 'Les mots de passe ne correspondent pas';
-      return;
+      return;  // Ne pas envoyer la requête si les mots de passe ne correspondent pas
     }
 
-    const user = { email: this.email, password: this.password };
-    this.authService.register(user).subscribe(
-      (response) => {
-        // Après l'inscription réussie, rediriger vers la page de login
+    this.authService.register(this.name, this.email, this.password).subscribe({
+      next: (response) => {
         this.router.navigate(['/login']);
       },
-      (error) => {
-        // Afficher une erreur si l'inscription échoue
-        this.errorMessage = 'Erreur lors de l\'inscription';
+      error: (err) => {
+        console.error('Registration failed', err);
+        this.errorMessage = 'Une erreur est survenue lors de l\'inscription';
       }
-    );
+    });
   }
 }

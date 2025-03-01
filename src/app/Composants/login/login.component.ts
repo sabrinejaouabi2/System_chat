@@ -7,26 +7,21 @@ import { AuthService } from 'src/app/Services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent  {
   email: string = '';
   password: string = '';
-  errorMessage: string = '';
-  constructor(private authService: AuthService,private router: Router) { }
 
-  ngOnInit(): void {
-  }
-  login(): void {
-    const user = { email: this.email, password: this.password };
-    this.authService.login(user).subscribe(
-      (response: any) => {
-        // Si la connexion est réussie, stocker le token JWT et rediriger l'utilisateur
-        this.authService.setToken(response.token);
-        this.router.navigate(['/dashboard']);  // Rediriger vers une page protégée
+  constructor(private authService: AuthService, private router: Router) { }
+
+  onLogin(): void {
+    this.authService.login(this.email, this.password).subscribe({
+      next: (response) => {
+        this.authService.saveToken(response.token);
+        this.router.navigate(['/dashboard']);
       },
-      (error) => {
-        // Si l'authentification échoue, afficher un message d'erreur
-        this.errorMessage = 'Email ou mot de passe incorrect';
+      error: (err) => {
+        console.error('Login failed', err);
       }
-    );
+    });
   }
 }

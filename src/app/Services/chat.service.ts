@@ -1,83 +1,71 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Client, Message } from '@stomp/stompjs';
+import { Client, Message, Stomp } from '@stomp/stompjs';
 import { Observable, Subject } from 'rxjs';
 import * as SockJS from 'sockjs-client';
+import { IMessage } from '../models/IMessage';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatService {
-  private client: Client;
-  private connectedSubject: Subject<boolean> = new Subject();
-  private messageSubject: Subject<Message> = new Subject();
+  private stompClient: any;
+  private messageSubject: Subject<IMessage> = new Subject<IMessage>();  // Ensure the message type is IMessage
+
   constructor() {
-    // Initialisation du client WebSocket
-    this.client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws/chat'),
-      connectHeaders: {},
-      debug: (str) => console.log(str),
-      reconnectDelay: 5000,
-      onConnect: () => {
-        console.log('✅ Connecté au WebSocket');
-        this.connectedSubject.next(true); // Indique que la connexion est réussie
-      },
-      onDisconnect: () => {
-        console.log('❌ Déconnecté du WebSocket');
-        this.connectedSubject.next(false); // Indique que la connexion a été perdue
-        this.reconnect(); // Tente de se reconnecter après une déconnexion
-      },
-      onStompError: (frame) => {
-        console.error('Erreur STOMP:', frame);
-        this.reconnect(); // Reconnexion en cas d'erreur STOMP
-      },
-      onWebSocketError: (event) => {
-        console.error('Erreur WebSocket:', event);
-      }
+    this.initializeWebSocketConnection();
+  }
+
+  private initializeWebSocketConnection() {
+    const serverUrl = 'http://localhost:8080/ws/chat';
+    const socket = new SockJS(serverUrl);
+    this.stompClient = Stomp.over(socket);
+
+    this.stompClient.connect({}, () => {
+      console.log('Connected to WebSocket');
+      this.stompClient.subscribe('/topic/messages', (message: any) => {
+        this.onMessageReceived(message.body);
+      });
     });
   }
 
-  // Méthode pour activer la connexion WebSocket
-  activate() {
-    this.client.activate();
+  private onMessageReceived(message: any) {
+    const parsedMessage: IMessage = JSON.parse(message);
+    this.messageSubject.next(parsedMessage);  // Emit parsed message
   }
 
-  // Tentative de reconnexion après une perte de connexion
-  private reconnect() {
-    console.log('🔄 Tentative de reconnexion...');
-    setTimeout(() => {
-      this.client.activate(); // Réactive la connexion après un délai
-    }, 5000);
+  sendMessage(message: IMessage) {
+    if (this.stompClient && this.stompClient.connected) {
+      this.stompClient.send(
+        '/app/sendMessage',
+        {},
+        JSON.stringify(message)
+      );
+    }
   }
 
-  // Vérifie si la connexion est établie
-  isConnected(): Observable<boolean> {
-    return this.connectedSubject.asObservable();
+  getMessages() {
+    return this.messageSubject.asObservable();  // Return as observable
   }
+  connect(userEmail: string) {
+    const serverUrl = `http://localhost:8080/ws/chat/${userEmail}`; // Adjust the URL if necessary
+    const socket = new SockJS(serverUrl);
+    this.stompClient = Stomp.over(socket);
 
-  // Envoie un message seulement si la connexion est établie
-  sendMessage(message: any): void {
-    this.isConnected().subscribe(isConnected => {
-      if (isConnected && this.client.connected) {
-        this.client.publish({
-          destination: '/app/send-message',
-          body: JSON.stringify(message)
-        });
-        console.log('📩 Message envoyé:', message);
-      } else {
-        console.log('🔴 WebSocket n\'est pas encore connecté, veuillez réessayer plus tard.');
-      }
+    this.stompClient.connect({}, () => {
+      console.log("Connected");
+      this.stompClient.subscribe('/topic/messages', (message: any) => {
+        this.onMessageReceived(message.body);
+      });
     });
   }
 
-  // Reçoit des messages via WebSocket
-  receiveMessages(): Observable<Message> {
-    return this.messageSubject.asObservable();
+  disconnect() {
+    if (this.stompClient && this.stompClient.connected) {
+      this.stompClient.disconnect(() => {
+        console.log("Disconnected");
+      });
+    }
   }
 
-  // Méthode d'abonnement pour recevoir les messages en temps réel
-  subscribeToMessages() {
-    this.client.subscribe('/topic/chat', (message: Message) => {
-      this.messageSubject.next(message);
-    });
-  }
 }

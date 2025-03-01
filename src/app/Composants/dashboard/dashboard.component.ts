@@ -1,9 +1,10 @@
-import { Router } from '@angular/router';
-import { AuthService } from './../../Services/auth.service';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { UserService } from 'src/app/Services/user.service';
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
+import { Subject } from "rxjs";
+import { IMessage } from "src/app/models/IMessage";
+import { AuthService } from "src/app/Services/auth.service";
+import { ChatService } from "src/app/Services/chat.service";
+import { UserService } from "src/app/Services/user.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -12,47 +13,93 @@ import { UserService } from 'src/app/Services/user.service';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   currentUser: any;
-  users: any[] = [];  // Initialiser un tableau pour les utilisateurs
-  private unsubscribe$ = new Subject<void>();  // Initialiser le Subject pour se désabonner
+  users: any[] = [];
+  message: string = '';
+  messages: IMessage[] = [];
+  errorMessage: string = '';
+  private unsubscribe$ = new Subject<void>();
+  receiverEmail: string = '';
 
-  constructor(private userService: UserService,
-              private authService: AuthService,private router:Router) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+    private chatService: ChatService,
+    private router: Router
+  ) {}
 
-              ngOnInit(): void {
-                if (!this.authService.isAuthenticated()) {
-                  console.log('L’utilisateur n’est pas connecté');
-                  this.router.navigate(['/login']);  // Rediriger l'utilisateur vers la page de connexion
-                } else {
-                  const user = this.authService.currentUser;
-                  console.log('ID de l’utilisateur:', user?.id);  // Vérifier l'ID
-                }
+  ngOnInit(): void {
+    const userEmail = this.authService.getUserEmail();
+    console.log('Email récupéré:', userEmail);
 
-                this.getUsers();  // Fetch users when the component loads
-              }
+    if (userEmail) {
+      // Retrieve user data
+      this.userService.getCurrentUser(userEmail).subscribe(
+        (response) => {
+          this.currentUser = response;
+          console.log('Utilisateur récupéré:', this.currentUser);
+        },
+        (error) => {
+          this.errorMessage = 'Erreur lors de la récupération de l\'utilisateur';
+          console.error('Erreur:', error);
+        }
+      );
 
+      // Retrieve all users
+      this.userService.getAllUsers().subscribe(
+        (users) => {
+          this.users = users;
+          console.log('Utilisateurs récupérés:', this.users);
+        },
+        (error) => {
+          this.errorMessage = 'Erreur lors de la récupération des utilisateurs';
+          console.error('Erreur:', error);
+        }
+      );
+
+      // Subscribe to messages
+      this.chatService.getMessages().subscribe(
+        (message: IMessage) => {
+          this.messages.push(message); // Add new message to the array
+          console.log('Message reçu:', message);
+        },
+        (error) => {
+          console.error('Erreur lors de la réception des messages:', error);
+        }
+      );
+    }
+  }
+
+  startChat(receiverEmail: string): void {
+    if (this.currentUser) {
+      console.log(`Démarrage du chat avec ${receiverEmail}`);
+      this.receiverEmail = receiverEmail;
+      this.chatService.sendMessage({ // Send a sample message to start the conversation
+        senderId: this.currentUser.id,
+        receiverId: receiverEmail,
+        content: 'Hello!',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  onSendMessage(): void {
+    if (this.message.trim() && this.receiverEmail) {
+      const message: IMessage = {
+        senderId: this.currentUser.id,
+        receiverId: this.receiverEmail,
+        content: this.message,
+        timestamp: new Date().toISOString()
+      };
+      console.log('Message à envoyer:', message);
+      this.chatService.sendMessage(message);
+      this.message = '';
+    } else {
+      console.log('Erreur: message vide ou destinataire non sélectionné');
+    }
+  }
 
   ngOnDestroy(): void {
-    this.unsubscribe$.next();  // Signaler à tous les observables abonnés de se désabonner
-    this.unsubscribe$.complete();  // Terminer l'observable
-  }
-
-  getUsers(): void {
-    this.userService.getAllUsers().pipe(takeUntil(this.unsubscribe$)).subscribe(
-      users => {
-        this.users = users;
-      },
-      error => {
-        console.error('Erreur lors de la récupération des utilisateurs:', error);
-      }
-    );
-  }
-
-  startChat(username: string): void {
-    console.log('Démarrer le chat avec', username);
-    // Logique pour démarrer un chat avec le nom d'utilisateur
-  }
-
-  logout(): void {
-    this.authService.logout(); // Appel à la méthode logout du service AuthService
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 }

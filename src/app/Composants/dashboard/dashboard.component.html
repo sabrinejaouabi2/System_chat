@@ -1,14 +1,36 @@
-<div>
-  <!-- Afficher les informations de l'utilisateur connecté -->
-  <h2>Utilisateur connecté: {{ currentUser?.username || 'Inconnu' }}</h2> <!-- Affichage du nom d'utilisateur ou 'Inconnu' si non défini -->
-<!-- Bouton de déconnexion -->
-<button (click)="logout()">Déconnexion</button>
-  <!-- Liste des utilisateurs -->
-  <h3>Liste des utilisateurs</h3>
-  <ul>
-    <li *ngFor="let user of users">
-      {{ user.email }} <!-- Afficher l'email de l'utilisateur -->
-      <button (click)="startChat(user.email)">Chat</button> <!-- Bouton pour démarrer une discussion -->
-    </li>
-  </ul>
+<div class="dashboard">
+  <!-- Informations sur l'utilisateur connecté -->
+  <div class="current-user">
+    <h3>Utilisateur Connecté</h3>
+    <p><strong>Nom:</strong> {{ currentUser.name }}</p>
+    <p><strong>Email:</strong> {{ currentUser.email }}</p>
+  </div>
 
+  <!-- Liste des utilisateurs -->
+  <div class="user-list">
+    <h3>Liste des Utilisateurs</h3>
+    <ul>
+      <li *ngFor="let user of users">
+        <!-- Exclure l'utilisateur connecté -->
+        <div *ngIf="user.email !== currentUser.email">
+          <p><strong>Nom:</strong> {{ user.name }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+          <button (click)="startChat(user.email)">Démarrer le chat</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Chat en temps réel -->
+  <div class="chat" *ngIf="receiverEmail">
+    <h3>Chat avec {{ receiverEmail }}</h3>
+    <div id="chat-box">
+      <!-- Afficher ici les messages en temps réel -->
+      <div *ngFor="let msg of messages">
+        <p><strong>{{ msg.senderId === currentUser.id ? 'Moi' : msg.senderId }}:</strong> {{ msg.content }}</p>
+      </div>
+    </div>
+    <input type="text" [(ngModel)]="message" (keyup.enter)="onSendMessage()" placeholder="Écrivez un message...">
+    <button (click)="onSendMessage()">Envoyer</button>
+  </div>
+</div>

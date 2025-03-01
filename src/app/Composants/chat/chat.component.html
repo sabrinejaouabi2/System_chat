@@ -1,20 +1,14 @@
 <div class="chat-container">
   <div class="messages">
-    <!-- Affichage des messages reçus en temps réel -->
-    <div *ngFor="let message of messages" class="message">
-      <p>{{ message.body }}</p>
+    <div *ngFor="let message of messages">
+      {{ message.content }}
     </div>
   </div>
 
-  <!-- Formulaire d'envoi de message -->
-  <div class="message-input">
-    <textarea [(ngModel)]="newMessage" placeholder="Tapez un message..."></textarea>
-    <button (click)="sendMessage(newMessage)" [disabled]="!newMessage">Envoyer</button>
+  <div class="input-area">
+    <textarea [(ngModel)]="newMessage" placeholder="Écrire un message..."></textarea>
+    <button (click)="sendMessage(newMessage)">Envoyer</button>
   </div>
-</div>
 
-<!-- Statut de la connexion WebSocket -->
-<div class="status">
-  <span *ngIf="isConnected">Connecté</span>
-  <span *ngIf="!isConnected">Déconnecté</span>
+  <div *ngIf="!isConnected" class="connection-status">Connexion perdue...</div>
 </div>
