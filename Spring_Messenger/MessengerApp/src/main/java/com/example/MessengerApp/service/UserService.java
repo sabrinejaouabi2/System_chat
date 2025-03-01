@@ -1,14 +1,11 @@
 package com.example.MessengerApp.service;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.example.MessengerApp.config.JwtUtil;
 import com.example.MessengerApp.model.User;
 import com.example.MessengerApp.repository.UserRepository;
@@ -43,12 +40,12 @@ public class UserService {
     }
 
  
-   // Méthode pour récupérer un utilisateur par son nom d'utilisateur
-public User getCurrentUser(String name) {
-    // Utilisation de la méthode findByUsername du repository
-    Optional<User> user = userRepository.findByName(name);
+ // Récupérer un utilisateur par son email
+ public User getCurrentUser(String email) {
+    Optional<User> user = userRepository.findByEmail(email);
     return user.orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 }
+
 
     
 }

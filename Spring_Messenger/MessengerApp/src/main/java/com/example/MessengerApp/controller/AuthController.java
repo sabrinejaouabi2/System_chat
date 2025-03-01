@@ -1,6 +1,7 @@
 package com.example.MessengerApp.controller;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.MessengerApp.config.JwtUtil;
+import com.example.MessengerApp.model.AuthResponse;
 import com.example.MessengerApp.model.User;
 import com.example.MessengerApp.repository.UserRepository;
 
@@ -30,14 +32,29 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return ResponseEntity.ok(userRepository.save(user));
     }
-     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
-        User existingUser = userRepository.findByEmail(user.getEmail());
-        if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
-            String token = jwtUtil.generateToken(user.getEmail());
-            return ResponseEntity.ok(Collections.singletonMap("token", token));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    
+  
+    @PostMapping("/login")
+public ResponseEntity<?> login(@RequestBody User user) {
+    // Récupérer l'utilisateur par son email
+    Optional<User> existingUserOptional = userRepository.findByEmail(user.getEmail());
+    
+    if (!existingUserOptional.isPresent()) {  // Using isPresent() instead of isEmpty()
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utilisateur non trouvé");
     }
+
+    User existingUser = existingUserOptional.get();
+    
+    // Vérification du mot de passe
+    if (!passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mot de passe incorrect");
+    }
+
+    // Génération du token JWT
+    String token = jwtUtil.generateToken(user.getEmail());
+    
+    // Retourner l'objet AuthResponse avec l'utilisateur et le token
+    return ResponseEntity.ok(new AuthResponse(existingUser, token));  // Returning AuthResponse containing user and token
+}
 
 }
