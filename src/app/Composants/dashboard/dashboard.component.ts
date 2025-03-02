@@ -67,37 +67,42 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       );
     }
-}
+  }
 
-startChat(receiverEmail: string): void {
+  startChat(receiverEmail: string): void {
     if (this.currentUser) {
       console.log(`Démarrage du chat avec ${receiverEmail}`);  // Affiche quand le chat démarre avec un destinataire
-      this.receiverEmail = receiverEmail;
-      this.chatService.sendMessage({ // Envoi du message
-        senderId: this.currentUser.id,
-        receiverId: receiverEmail,
-        content: 'Hello!',
-        timestamp: new Date().toISOString()
-      });
-    }
-}
 
-onSendMessage(): void {
+      // Trouver l'utilisateur dans la liste des utilisateurs
+      const receiver = this.users.find(user => user.email === receiverEmail);
+
+      if (receiver) {
+        // Si l'utilisateur est trouvé, utiliser son nom
+        this.receiverEmail = receiverEmail;
+
+        // Demander un message personnalisé dès le début
+        this.message = `Hello, ${receiver.firstName || receiver.name || 'utilisateur'}!`; // Message personnalisé avec le nom du destinataire
+      } else {
+        console.error('Utilisateur non trouvé');
+      }
+    }
+  }
+
+  onSendMessage(): void {
     if (this.message.trim() && this.receiverEmail) {
       const message: IMessage = {
         senderId: this.currentUser.id,
-        receiverId: this.receiverEmail,
-        content: this.message,
+        receiverId: this.receiverEmail, // Si tu veux envoyer l'email ou un autre identifiant, ajuste cela
+        content: this.message,  // Le message saisi par l'utilisateur
         timestamp: new Date().toISOString()
       };
       console.log('Message à envoyer:', message);  // Affiche le message à envoyer
-      this.chatService.sendMessage(message);
-      this.message = '';
+      this.chatService.sendMessage(message);  // Envoie le message via le service
+      this.message = '';  // Réinitialiser le champ de saisie après envoi
     } else {
       console.log('Erreur: message vide ou destinataire non sélectionné');
     }
-}
-
+  }
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();

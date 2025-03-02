@@ -26,8 +26,11 @@
     <h3>Chat avec {{ receiverEmail }}</h3>
     <div id="chat-box">
       <!-- Afficher ici les messages en temps réel -->
-      <div *ngFor="let msg of messages">
-        <p><strong>{{ msg.senderId === currentUser.id ? 'Moi' : msg.senderId }}:</strong> {{ msg.content }}</p>
+      <div *ngFor="let msg of messages" [class.sent]="msg.senderId === currentUser.id" [class.received]="msg.senderId !== currentUser.id">
+        <div class="message-content">
+          <p>{{ msg.senderId === currentUser.id ? 'Moi' : msg.senderId }}: {{ msg.content }}</p>
+          <small>{{ msg.timestamp | date:'short' }}</small>
+        </div>
       </div>
     </div>
     <input type="text" [(ngModel)]="message" (keyup.enter)="onSendMessage()" placeholder="Écrivez un message...">
