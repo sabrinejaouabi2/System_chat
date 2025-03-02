@@ -23,6 +23,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+            "sockjs-client",
+            "@stomp/stompjs"
+          ],
             "outputPath": "dist/messenger-app",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -71,6 +75,7 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
+
             "browserTarget": "messenger-app:build"
 
           },

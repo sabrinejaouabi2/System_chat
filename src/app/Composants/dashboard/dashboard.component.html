@@ -2,8 +2,8 @@
   <!-- Informations sur l'utilisateur connecté -->
   <div class="current-user">
     <h3>Utilisateur Connecté</h3>
-    <p><strong>Nom:</strong> {{ currentUser.name }}</p>
-    <p><strong>Email:</strong> {{ currentUser.email }}</p>
+    <p><strong>Nom:</strong> {{ currentUser?.name }}</p>
+    <p><strong>Email:</strong> {{ currentUser?.email }}</p>
   </div>
 
   <!-- Liste des utilisateurs -->
@@ -12,9 +12,9 @@
     <ul>
       <li *ngFor="let user of users">
         <!-- Exclure l'utilisateur connecté -->
-        <div *ngIf="user.email !== currentUser.email">
-          <p><strong>Nom:</strong> {{ user.name }}</p>
-          <p><strong>Email:</strong> {{ user.email }}</p>
+        <div *ngIf="user.email !== currentUser?.email">
+          <p><strong>Nom:</strong> {{ user?.name }}</p>
+          <p><strong>Email:</strong> {{ user?.email }}</p>
           <button (click)="startChat(user.email)">Démarrer le chat</button>
         </div>
       </li>

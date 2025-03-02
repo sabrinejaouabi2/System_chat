@@ -29,14 +29,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const userEmail = this.authService.getUserEmail();
-    console.log('Email récupéré:', userEmail);
+    console.log('Email récupéré:', userEmail);  // Affiche l'email récupéré
 
     if (userEmail) {
-      // Retrieve user data
+      // Récupérer les données utilisateur
       this.userService.getCurrentUser(userEmail).subscribe(
         (response) => {
           this.currentUser = response;
-          console.log('Utilisateur récupéré:', this.currentUser);
+          console.log('Utilisateur récupéré:', this.currentUser);  // Affiche l'utilisateur récupéré
         },
         (error) => {
           this.errorMessage = 'Erreur lors de la récupération de l\'utilisateur';
@@ -44,11 +44,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       );
 
-      // Retrieve all users
+      // Récupérer tous les utilisateurs
       this.userService.getAllUsers().subscribe(
         (users) => {
           this.users = users;
-          console.log('Utilisateurs récupérés:', this.users);
+          console.log('Utilisateurs récupérés:', this.users);  // Affiche la liste des utilisateurs récupérés
         },
         (error) => {
           this.errorMessage = 'Erreur lors de la récupération des utilisateurs';
@@ -56,33 +56,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       );
 
-      // Subscribe to messages
+      // Souscription aux messages
       this.chatService.getMessages().subscribe(
         (message: IMessage) => {
-          this.messages.push(message); // Add new message to the array
-          console.log('Message reçu:', message);
+          this.messages.push(message); // Ajouter le message reçu
+          console.log('Message reçu:', message);  // Affiche le message reçu
         },
         (error) => {
           console.error('Erreur lors de la réception des messages:', error);
         }
       );
     }
-  }
+}
 
-  startChat(receiverEmail: string): void {
+startChat(receiverEmail: string): void {
     if (this.currentUser) {
-      console.log(`Démarrage du chat avec ${receiverEmail}`);
+      console.log(`Démarrage du chat avec ${receiverEmail}`);  // Affiche quand le chat démarre avec un destinataire
       this.receiverEmail = receiverEmail;
-      this.chatService.sendMessage({ // Send a sample message to start the conversation
+      this.chatService.sendMessage({ // Envoi du message
         senderId: this.currentUser.id,
         receiverId: receiverEmail,
         content: 'Hello!',
         timestamp: new Date().toISOString()
       });
     }
-  }
+}
 
-  onSendMessage(): void {
+onSendMessage(): void {
     if (this.message.trim() && this.receiverEmail) {
       const message: IMessage = {
         senderId: this.currentUser.id,
@@ -90,13 +90,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         content: this.message,
         timestamp: new Date().toISOString()
       };
-      console.log('Message à envoyer:', message);
+      console.log('Message à envoyer:', message);  // Affiche le message à envoyer
       this.chatService.sendMessage(message);
       this.message = '';
     } else {
       console.log('Erreur: message vide ou destinataire non sélectionné');
     }
-  }
+}
+
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
