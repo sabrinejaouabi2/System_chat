@@ -69,7 +69,7 @@ export class ChatService {
         body: JSON.stringify(message),
       });
     } else {
-      console.warn('WebSocket client is not connected'); // Avertir si la connexion WebSocket échoue
+      console.warn('WebSocket client is not connect-ed'); // Avertir si la connexion WebSocket échoue
     }
   }
 

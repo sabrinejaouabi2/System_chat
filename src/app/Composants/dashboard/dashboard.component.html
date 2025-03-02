@@ -1,18 +1,18 @@
 <div class="dashboard">
-  <!-- Informations sur l'utilisateur connecté -->
+  <!-- Utilisateur Connecté -->
   <div class="current-user">
     <h3>Utilisateur Connecté</h3>
     <p><strong>Nom:</strong> {{ currentUser?.name }}</p>
     <p><strong>Email:</strong> {{ currentUser?.email }}</p>
+    <button (click)="logout()" class="logout-button">Déconnexion</button>
   </div>
 
-  <!-- Liste des utilisateurs -->
+  <!-- Liste des Utilisateurs -->
   <div class="user-list">
     <h3>Liste des Utilisateurs</h3>
     <ul>
       <li *ngFor="let user of users">
-        <!-- Exclure l'utilisateur connecté -->
-        <div *ngIf="user.email !== currentUser?.email">
+        <div *ngIf="user.email !== currentUser?.email" class="user-card">
           <p><strong>Nom:</strong> {{ user?.name }}</p>
           <p><strong>Email:</strong> {{ user?.email }}</p>
           <button (click)="startChat(user.email)">Démarrer le chat</button>
@@ -21,19 +21,24 @@
     </ul>
   </div>
 
-  <!-- Chat en temps réel -->
+  <!-- Section Chat -->
   <div class="chat" *ngIf="receiverEmail">
     <h3>Chat avec {{ receiverEmail }}</h3>
-    <div id="chat-box">
-      <!-- Afficher ici les messages en temps réel -->
-      <div *ngFor="let msg of messages" [class.sent]="msg.senderId === currentUser.id" [class.received]="msg.senderId !== currentUser.id">
-        <div class="message-content">
-          <p>{{ msg.senderId === currentUser.id ? 'Moi' : msg.senderId }}: {{ msg.content }}</p>
+    <div id="chat-box" *ngIf="messages.length > 0" class="chat-box">
+      <div *ngFor="let msg of messages">
+        <div [ngClass]="{'sent-message': msg.senderId === currentUser.id, 'received-message': msg.senderId !== currentUser.id}">
+          <strong>{{ msg.senderId === currentUser.id ? 'Moi' : msg.senderId }}:</strong>
+          <p>{{ msg.content }}</p>
           <small>{{ msg.timestamp | date:'short' }}</small>
         </div>
       </div>
     </div>
-    <input type="text" [(ngModel)]="message" (keyup.enter)="onSendMessage()" placeholder="Écrivez un message...">
-    <button (click)="onSendMessage()">Envoyer</button>
+    <div *ngIf="messages.length === 0">Aucun message encore...</div>
+
+    <!-- Champ de saisie -->
+    <div class="message-input">
+      <input type="text" [(ngModel)]="message" (keyup.enter)="onSendMessage()" placeholder="Écrivez un message...">
+      <button (click)="onSendMessage()">Envoyer</button>
+    </div>
   </div>
 </div>

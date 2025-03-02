@@ -1,6 +1,6 @@
 export interface IMessage {
-  senderId: number;  // Utiliser un nombre pour l'ID de l'expéditeur
-  receiverId: string; // ID du destinataire sous forme de chaîne
+  senderId: number | null;  // senderId peut être null
+  receiverId: string; // Correspond au String dans Spring
   content: string;    // Contenu du message
-  timestamp: string;  // Horodatage du message
+  timestamp: string;  // Horodatage du message (en ISO 8601, similaire à LocalDateTime)
 }

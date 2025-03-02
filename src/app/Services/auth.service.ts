@@ -43,9 +43,12 @@ login(email: string, password: string): Observable<any> {
 
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('userEmail'); // Supprimer l'email aussi
+
   }
 
   isLoggedIn(): boolean {
     return this.getToken() !== null;
+
   }
 }

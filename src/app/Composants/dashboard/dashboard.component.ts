@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { Subject } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { IMessage } from "src/app/models/IMessage";
 import { AuthService } from "src/app/Services/auth.service";
 import { ChatService } from "src/app/Services/chat.service";
@@ -108,4 +108,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
+  logout(): void {
+    // Supprimer le token d'authentification
+    this.authService.logout();
+
+    // Rediriger vers la page de connexion
+    this.router.navigate(['/login']);
+    console.log('Utilisateur déconnecté');
+  }
+
+
 }
