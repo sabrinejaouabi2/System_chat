@@ -13,6 +13,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.MessengerApp.service.UserService;
 
@@ -23,32 +24,52 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
      @Autowired
     private UserService userService;
-      @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/chat").setAllowedOrigins("http://localhost:4200").withSockJS();
-    }
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefixes("/app");
-    }
+   
+   
 
     public class HttpSessionIdHandshakeInterceptor implements HandshakeInterceptor {
+
+        
         @Override
         public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-            String email = request.getURI().getQuery().split("=")[1];
-            logger.info("User connected: " + email);  // Log l'utilisateur connecté
+            String uri = request.getURI().toString();
+            String email = UriComponentsBuilder.fromUriString(uri).build().getQueryParams().getFirst("email");
+            
+            if (email == null || email.isEmpty()) {
+                logger.error("No email parameter in WebSocket request.");
+                return false;  // Reject the handshake if the email is missing
+            }
+            logger.info("User connected: " + email);
             userService.addConnectedUser(email);
             return true;
         }
-
+    
         @Override
         public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception ex) {
-            String email = request.getURI().getQuery().split("=")[1];
-            logger.info("User disconnected: " + email);  // Log l'utilisateur déconnecté
-            userService.removeConnectedUser(email);
+            String uri = request.getURI().toString();
+            String email = UriComponentsBuilder.fromUriString(uri).build().getQueryParams().getFirst("email");
+            
+            if (email != null) {
+                logger.info("User disconnected: " + email);  // Log l'utilisateur déconnecté
+                userService.removeConnectedUser(email);
+            }
         }
     }
+     // CORS configuration for WebSocket connections
+     @Override
+     public void registerStompEndpoints(StompEndpointRegistry registry) {
+         registry.addEndpoint("/ws/chat")
+                 .setAllowedOrigins("http://localhost:4200")  // Permet uniquement les connexions de ce domaine
+                 .withSockJS();
+     }
+ 
+     @Override
+     public void configureMessageBroker(MessageBrokerRegistry config) {
+         config.enableSimpleBroker("/topic");
+         config.setApplicationDestinationPrefixes("/app");
+     }
+     
+ }
+ 
+ 
 
-
-}

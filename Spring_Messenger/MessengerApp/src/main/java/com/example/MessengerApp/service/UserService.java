@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import com.example.MessengerApp.config.JwtUtil;
 import com.example.MessengerApp.model.User;
 import com.example.MessengerApp.repository.UserRepository;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @Service
 
 public class UserService {
@@ -16,6 +19,7 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
     private Set<String> connectedUsers = new HashSet<>();
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
         
     public UserService(UserRepository userRepository) {
@@ -23,12 +27,16 @@ public class UserService {
     }
  // Ajouter un utilisateur à la liste des connectés
     public void addConnectedUser(String email) {
+        logger.info("User added to connected users: " + email);
+
         connectedUsers.add(email);
     }
 
     // Retirer un utilisateur de la liste des connectés
     public void removeConnectedUser(String email) {
         connectedUsers.remove(email);
+        logger.info("User removed from connected users: " + email);
+
     }
 
     // Retourne la liste des utilisateurs connectés
@@ -38,8 +46,16 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
-
- 
+    public boolean isUserConnected(Long id) {
+        // Si le Set contient l'email et non l'ID, vous devez d'abord récupérer l'email de l'utilisateur.
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            return connectedUsers.contains(user.get().getEmail());  // Vérifier si l'email est dans le Set
+        }
+        return false;
+    }
+    
+    
  // Récupérer un utilisateur par son email
  public User getCurrentUser(String email) {
     Optional<User> user = userRepository.findByEmail(email);
