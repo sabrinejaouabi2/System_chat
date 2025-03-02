@@ -33,11 +33,15 @@ public class ChatController {
  @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/sendMessage")  // Cette méthode sera appelée lors de l'envoi d'un message
+    @MessageMapping("/sendMessage")
     public void sendMessage(Message message) {
+        // Enregistrer le message dans la base de données
+        Message savedMessage = messageService.saveMessage(message);
+
         // Diffuser le message à tous les abonnés du sujet /topic/messages
-        messagingTemplate.convertAndSend("/topic/messages", message);
+        messagingTemplate.convertAndSend("/topic/messages", savedMessage);
     }
+
 @GetMapping("/ws/chat/info")
 public ResponseEntity<String> getChatInfo(@RequestParam String email) {
     try {
@@ -53,7 +57,7 @@ public ResponseEntity<String> getChatInfo(@RequestParam String email) {
      
     
       @GetMapping("/history/{senderId}/{receiverId}")
-    public List<Message> getChatHistory(@PathVariable Long senderId, @PathVariable Long receiverId) {
+    public List<Message> getChatHistory(@PathVariable Long senderId, @PathVariable String receiverId) {
         return messageService.getMessages(senderId, receiverId);
     }
 }

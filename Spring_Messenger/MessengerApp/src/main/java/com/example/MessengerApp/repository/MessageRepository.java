@@ -8,6 +8,6 @@ import com.example.MessengerApp.model.Message;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
     // Recherche les messages entre deux utilisateurs par leur ID
-    List<Message> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
+    List<Message> findBySenderIdAndReceiverId(Long senderId, String receiverId);
 
 }

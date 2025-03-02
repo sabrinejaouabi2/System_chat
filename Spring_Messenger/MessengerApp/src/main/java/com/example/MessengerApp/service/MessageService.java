@@ -17,7 +17,8 @@ public class MessageService {
     }
 
     // Récupère l'historique des messages entre deux utilisateurs
-    public List<Message> getMessages(Long senderId, Long receiverId) {
+    public List<Message> getMessages(Long senderId, String receiverId) {
         return messageRepository.findBySenderIdAndReceiverId(senderId, receiverId);
     }
+    
 }
