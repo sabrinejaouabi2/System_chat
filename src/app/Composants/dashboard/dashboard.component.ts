@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { Observable, Subject } from "rxjs";
+import {  Subject } from "rxjs";
 import { IMessage } from "src/app/models/IMessage";
 import { AuthService } from "src/app/Services/auth.service";
 import { ChatService } from "src/app/Services/chat.service";
@@ -35,14 +35,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const userEmail = this.authService.getUserEmail();
-    console.log('Email récupéré:', userEmail);  // Affiche l'email récupéré
+    console.log('Email récupéré:', userEmail);
 
     if (userEmail) {
-      // Récupérer les données utilisateur
+      // Fetch current user and all users
       this.userService.getCurrentUser(userEmail).subscribe(
         (response) => {
           this.currentUser = response;
-          console.log('Utilisateur récupéré:', this.currentUser);  // Affiche l'utilisateur récupéré
+          console.log('Utilisateur récupéré:', this.currentUser);
         },
         (error) => {
           this.errorMessage = 'Erreur lors de la récupération de l\'utilisateur';
@@ -50,11 +50,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       );
 
-      // Récupérer tous les utilisateurs
       this.userService.getAllUsers().subscribe(
         (users) => {
           this.users = users;
-          console.log('Utilisateurs récupérés:', this.users);  // Affiche la liste des utilisateurs récupérés
+          console.log('Utilisateurs récupérés:', this.users);
         },
         (error) => {
           this.errorMessage = 'Erreur lors de la récupération des utilisateurs';
@@ -62,15 +61,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       );
 
-      // Souscription aux messages
+      // Subscribe to messages
       this.chatService.getMessages().subscribe(
         (message: IMessage) => {
-          this.messages.push(message); // Ajouter le message reçu
-          console.log('Message reçu:', message);  // Affiche le message reçu
           if (message.receiverId === this.currentUser.email) {
-            this.hasNewMessages = true; // Indiquer qu'il y a un nouveau message
+            this.receivedMessages.push(message);  // Add to received messages list
+            this.hasNewMessages = true;  // Mark as having new messages
+            this.showReceived = true; // Automatically show received messages
+            console.log('Message reçu:', message);
           }
-          this.cdr.detectChanges();  // Force la détection des changements
         },
         (error) => {
           console.error('Erreur lors de la réception des messages:', error);
@@ -78,6 +77,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       );
     }
   }
+
 
   showReceivedMessages(): void {
     // Filtrer uniquement les messages reçus
@@ -91,9 +91,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // Fonction pour ouvrir la section de réponse
-  replyToMessage(senderId: string): void {
-    this.replyingTo = senderId;
-    this.replyMessage = ''; // Réinitialiser le champ
+  replyToMessage(senderEmail: string): void {
+    this.replyingTo = senderEmail;  // Définit automatiquement le destinataire (expéditeur du message)
+    this.replyMessage = '';  // Réinitialise le champ de texte
   }
 
   // Fonction pour envoyer une réponse
@@ -116,27 +116,42 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.replyMessage = ''; // Reset the reply message field
     }
   }
-
-  // Fonction pour démarrer une conversation
   startChat(receiverEmail: string): void {
     if (this.currentUser) {
       console.log(`Démarrage du chat avec ${receiverEmail}`);
 
-      // Trouver le destinataire dans la liste des utilisateurs
       const receiver = this.users.find(user => user.email === receiverEmail);
 
       if (receiver) {
-        // Réinitialiser les messages pour une conversation propre
-        this.messages = [];
         this.receiverEmail = receiverEmail;
+        this.messages = []; // Reset the current messages
 
-        // Demander un message personnalisé au début
+        // Subscribe to the message stream and filter messages as they come in
+        this.chatService.getMessages().subscribe(
+          (message: IMessage) => {
+            // Filter messages based on the current user and receiver
+            if (
+              (message.receiverId === this.currentUser.email && message.senderEmail === receiverEmail) ||
+              (message.senderEmail === this.currentUser.email && message.receiverId === receiverEmail)
+            ) {
+              this.messages.push(message); // Add filtered message to the message list
+            }
+          },
+          (error) => {
+            console.error('Erreur lors de la réception des messages:', error);
+          }
+        );
+
+        // Optional: Add an initial message
         this.message = `Hello, ${receiver.firstName || receiver.name || 'utilisateur'}!`;
       } else {
         console.error('Utilisateur non trouvé');
       }
     }
   }
+
+
+
 
   // Fonction pour envoyer un message
   onSendMessage(): void {

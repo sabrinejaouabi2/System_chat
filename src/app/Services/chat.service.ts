@@ -78,6 +78,7 @@ export class ChatService {
     return this.messageSubject.asObservable();
   }
 
+
   // Méthode pour récupérer l'historique des messages entre deux utilisateurs
   getChatHistory(senderId: number, receiverId: number): Observable<IMessage[]> {
     return this.http.get<IMessage[]>(`${this.apiUrl}/history/${senderId}/${receiverId}`);
@@ -95,4 +96,8 @@ export class ChatService {
       console.log('WebSocket connection closed');
     }
   }
+  getMessagesByUsers(senderEmail: string, receiverEmail: string): Observable<IMessage[]> {
+    return this.http.get<IMessage[]>(`/api/messages?sender=${senderEmail}&receiver=${receiverEmail}`);
+  }
+
 }

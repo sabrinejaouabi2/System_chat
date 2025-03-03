@@ -16,8 +16,10 @@
 
     <div class="chat-box">
       <div class="message-list" *ngIf="messages.length > 0">
-        <div *ngFor="let msg of messages" [class.sent]="msg.senderEmail === currentUser?.email">
-          <strong>{{ msg.senderName }}:</strong> {{ msg.content }}
+        <div *ngFor="let message of messages">
+          <div *ngIf="message.receiverId === currentUser.email || message.senderEmail === currentUser.email">
+            <p><strong>{{ message.senderName }}:</strong> {{ message.content }}</p>
+          </div>
         </div>
       </div>
 
