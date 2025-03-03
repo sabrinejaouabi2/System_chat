@@ -33,4 +33,9 @@ public ResponseEntity<?> getCurrentUser(@PathVariable String email) {
     }
 }
 
+@GetMapping("/user/{userId}")
+public User getUser(@PathVariable String userId) {
+    return userService.getUserById(userId);  // Passer un String, converti en Long dans le service
+}
+
 }

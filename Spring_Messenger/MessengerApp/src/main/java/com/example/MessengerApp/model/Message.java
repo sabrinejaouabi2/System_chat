@@ -22,8 +22,12 @@ import lombok.Setter;
 public class Message {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;
-    private Long senderId;
+    private String senderId;
     private String receiverId;
     private String content;
     private LocalDateTime timestamp = LocalDateTime.now();
+    // Champ supplémentaire pour stocker le nom de l'expéditeur
+    private String senderName;  // Or you can use 'senderEmail' if you prefer
+    private String senderEmail; // Email de l'expéditeur
+
 }

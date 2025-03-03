@@ -62,6 +62,19 @@ public class UserService {
     return user.orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 }
 
+// Méthode pour récupérer l'utilisateur par son ID
+public User getUserById(String userId) {
+    // Convert String userId to Long before calling findById
+    try {
+        Long id = Long.parseLong(userId);
+        return userRepository.findById(id).orElse(null);
+    } catch (NumberFormatException e) {
+        // Handle the case where the string can't be parsed to a Long
+        return null;  // or throw an exception if required
+    }
+}
+
+
 
     
 }

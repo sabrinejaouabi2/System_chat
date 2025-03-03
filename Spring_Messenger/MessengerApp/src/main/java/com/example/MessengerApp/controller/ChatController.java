@@ -57,7 +57,7 @@ public ResponseEntity<String> getChatInfo(@RequestParam String email) {
      
     
       @GetMapping("/history/{senderId}/{receiverId}")
-    public List<Message> getChatHistory(@PathVariable Long senderId, @PathVariable String receiverId) {
+    public List<Message> getChatHistory(@PathVariable String senderId, @PathVariable String receiverId) {
         return messageService.getMessages(senderId, receiverId);
     }
 }
