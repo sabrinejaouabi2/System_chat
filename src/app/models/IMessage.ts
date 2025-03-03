@@ -1,6 +1,10 @@
+// models/IMessage.ts
 export interface IMessage {
-  senderId: number | null;  // senderId peut être null
-  receiverId: string; // Correspond au String dans Spring
-  content: string;    // Contenu du message
-  timestamp: string;  // Horodatage du message (en ISO 8601, similaire à LocalDateTime)
+  id: number;
+  senderId: string;
+  receiverId: string;
+  senderName: string;   // Ajouter le nom de l'expéditeur
+  senderEmail: string;  // Ajouter l'email de l'expéditeur
+  content: string;
+  timestamp: string;
 }

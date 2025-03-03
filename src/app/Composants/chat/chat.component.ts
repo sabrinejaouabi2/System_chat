@@ -33,26 +33,60 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.chatService.disconnectWebSocket(); // Déconnexion lorsque le composant est détruit
   }
-
-  // Envoi d'un message
   sendMessage() {
     if (this.newMessage.trim() && this.selectedReceiverId) {
-      const senderId = this.userService.getCurrentUserId();  // Récupérer dynamiquement l'ID de l'expéditeur
-      const receiverId = this.selectedReceiverId;  // Utilisation du receiverId en tant que string
+      // Get the current user's email (replace with actual logic to retrieve the email)
+      const currentUserEmail = this.userService.getCurrentUserEmail();
 
-      const message: IMessage = {
-        senderId: senderId,  // Utilisation du number pour senderId
-        receiverId: receiverId,  // Utilisation du string pour receiverId
-        content: this.newMessage,
-        timestamp: new Date().toISOString(),  // Format ISO 8601
-      };
+      if (!currentUserEmail) {
+        console.error("L'email de l'utilisateur actuel est manquant.");
+        return;
+      }
 
-      this.chatService.sendMessage(message); // Envoi du message via le service
-      this.newMessage = ''; // Réinitialiser le champ de saisie
+      this.userService.getCurrentUser(currentUserEmail).subscribe((currentUser: User) => {
+        if (!currentUser) {
+          console.error("Utilisateur introuvable.");
+          return;
+        }
+
+        const senderId = currentUser.id.toString();  // Convert senderId to string
+        const senderName = currentUser.name;         // User's name
+        const senderEmail = currentUser.email;       // User's email
+
+        if (!senderId || !senderName || !senderEmail) {
+          console.error("L'ID, le nom ou l'email de l'utilisateur est manquant.");
+          return;
+        }
+
+        if (!this.selectedReceiverId) {
+          console.error("Le destinataire n'est pas sélectionné.");
+          return;  // Ensure a valid receiver is selected
+        }
+
+        const message: IMessage = {
+          id: Date.now(),  // Temporary ID based on timestamp or leave it null if handled by server
+          senderId: senderId,
+          senderName: senderName,
+          senderEmail: senderEmail,
+          receiverId: this.selectedReceiverId,  // Now guaranteed to be a valid string
+          content: this.newMessage,
+          timestamp: new Date().toISOString(),
+        };
+
+        this.chatService.sendMessage(message);  // Send the message
+        this.newMessage = '';  // Reset the message input field
+      });
     } else {
       console.error('Impossible d\'envoyer le message, veuillez sélectionner un destinataire et renseigner le message.');
     }
   }
+
+
+
+
+
+
+
 
   // Gestion de la réception des messages
   onMessageReceived(message: IMessage) {

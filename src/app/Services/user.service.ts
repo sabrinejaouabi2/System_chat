@@ -24,10 +24,20 @@ export class UserService {
   getAllUsers(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
-
+/*
   getCurrentUser(email: string) {
     return this.http.get<any>(`${this.apiUrl}/currentUser/${email}`);
   }
+    */
+  getCurrentUser(email: string): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/currentUser/${email}`).pipe(
+      catchError(error => {
+        console.error('Error fetching user:', error);
+        return throwError(error);
+      })
+    );
+  }
+
  // Méthode pour récupérer dynamiquement l'ID de l'utilisateur actuel
  setCurrentUser(user: User) {
   this.currentUser = user;
@@ -36,5 +46,13 @@ export class UserService {
 // Récupérer l'ID de l'utilisateur actuel
 getCurrentUserId(): number | null {
   return this.currentUser ? this.currentUser.id : null;
+}
+// New methods to get the current user's name and email
+getCurrentUserName(): string | null {
+  return this.currentUser ? this.currentUser.name : null;
+}
+
+getCurrentUserEmail(): string | null {
+  return this.currentUser ? this.currentUser.email : null;
 }
 }
